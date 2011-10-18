@@ -41,6 +41,7 @@ import subprocess
 import sys
 import time
 import tempfile
+import getpass
 
 ''' Blender modules '''
 import bpy
@@ -792,7 +793,7 @@ def get_full_filepath(bus, ob, filepath):
 
 	# Copy file to the shared directory
 	dest_file= os.path.join(dest_path, src_filename)
-	
+
 	if os.path.isfile(src_file):
 		if os.path.exists(dest_file):
 			# Copy only if the file was changed
@@ -812,7 +813,7 @@ def get_full_filepath(bus, ob, filepath):
 		return "//%s/%s/%s/%s/%s"%(HOSTNAME,
 								   VRayDR.share_name,
 								   bus['filenames']['DR']['sub_dir'], component_subdir, src_filename)
-		
+
 	return bus['filenames']['DR']['prefix'] + os.sep + component_subdir + os.sep + src_filename
 
 
@@ -833,7 +834,7 @@ def get_render_file_format(VRayExporter, file_format):
 	else:
 		file_format= 'png'
 	return file_format
-	
+
 
 # True if object on active layer
 def object_on_visible_layers(sce,ob):
@@ -880,7 +881,7 @@ def get_distance(ob1, ob2):
 # VRayProxy Creator call
 def proxy_creator(hq_filepath, vrmesh_filepath, append= False):
 	proxycreator_bin= "proxycreator"
-	
+
 	if PLATFORM == 'linux2':
 		proxycreator_bin+= "_linux"
 	elif PLATFORM == 'win32':
@@ -979,7 +980,7 @@ def init_files(bus):
 	VRayExporter=   VRayScene.exporter
 	VRayDR=         VRayScene.VRayDR
 	SettingsOutput= VRayScene.SettingsOutput
-	
+
 	(blendfile_path, blendfile_name)= os.path.split(bpy.data.filepath)
 
 	# Blend-file name without extension
@@ -989,9 +990,9 @@ def init_files(bus):
 	default_dir= tempfile.gettempdir()
 
 	# Export and output directory
-	export_filepath= os.path.join(default_dir, "vb25")
+	export_filepath= os.path.join(default_dir, "vb25-" + getpass.getuser())
 	export_filename= "scene"
-	output_filepath= default_dir
+	output_filepath= os.path.join(default_dir, "vb25-output-" + getpass.getuser())
 
 	if bpy.data.filepath:
 		if SettingsOutput.img_dir:
@@ -1026,7 +1027,10 @@ def init_files(bus):
 
 	if bus['preview']:
 		export_filename= "preview"
-		export_filepath= create_dir(os.path.join(tempfile.gettempdir(), "vb25-preview"))
+		if os.name == 'posix':
+			export_filepath= "/dev/shm/vb25-preview-" + getpass.getuser()
+		else:
+			export_filepath= os.path.join(tempfile.gettempdir(), "vb25-preview-" + getpass.getuser())
 
 	export_directory= create_dir(export_filepath)
 
@@ -1071,7 +1075,6 @@ def init_files(bus):
 		for key in sorted(bus['filenames'].keys()):
 			debug(scene, "  {0:16}: {1}".format(key.capitalize(), bus['filenames'][key]))
 
-
 # Converts kelvin temperature to color
 def kelvin_to_rgb(temperature):
 	return mathutils.Color(COLOR_TABLE[str(int(temperature / 100) * 100)])
@@ -1084,5 +1087,3 @@ def HexFormat(value):
 	else:
 		bytes= struct.pack('<i', value)
 	return ''.join(["%02X" % b for b in bytes])
-
-
