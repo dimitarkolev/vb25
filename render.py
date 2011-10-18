@@ -184,7 +184,7 @@ LIGHT_PARAMS= { # TEMP! REMOVE!
 		#'diffuseMult',
 		'causticMult',
 		'enabled'
-	),	
+	),
 
 	'LightIESMax': (
 		'enabled',
@@ -427,7 +427,7 @@ def write_geometry_python(bus):
 		geometry_file.close()
 
 	del bus['files']['geometry']
-	
+
 	debug(scene, "Writing meshes... done {0:<64}".format("[%.2f]"%(time.clock() - timer)))
 
 
@@ -435,7 +435,7 @@ def write_geometry(bus):
 	scene=        bus['scene']
 	VRayScene=    scene.vray
 	VRayExporter= VRayScene.exporter
-	
+
 	if 'export_meshes' in dir(bpy.ops.vray):
 		# Call V-Ray/Blender custom mesh export operator
 		bpy.ops.vray.export_meshes(
@@ -469,7 +469,7 @@ def write_GeomMayaHair(bus, ps, hair_geom_name):
 
 		segments= len(particle.hair_keys)
 		num_hair_vertices.append( HexFormat(segments) )
-		
+
 		width= VRayFur.width / 2.0
 		thin_start= int(VRayFur.thin_start / 100 * segments)
 		thin_segments= segments - thin_start
@@ -643,16 +643,16 @@ def write_lamp_textures(bus):
 	}
 
 	bus['lamp_textures']= {}
-	
+
 	for i,slot in enumerate(la.texture_slots):
 		if slot and slot.texture and slot.texture.type in TEX_TYPES:
 			VRaySlot=    slot.texture.vray_slot
 			VRayLight=   VRaySlot.VRayLight
-			
+
 			for key in defaults:
 				use_slot= False
 				factor=   1.0
-				
+
 				if getattr(VRayLight, 'map_'+key):
 					use_slot= True
 					factor=   getattr(VRayLight, key+'_mult')
@@ -681,7 +681,7 @@ def write_lamp_textures(bus):
 	if VRayExporter.debug:
 		if len(bus['lamp_textures']):
 			print_dict(scene, "Lamp \"%s\" texture stack" % la.name, bus['lamp_textures'])
-	
+
 	for key in bus['lamp_textures']:
 		if len(bus['lamp_textures'][key]):
 			bus['lamp_textures'][key]= write_TexOutput(bus, stack_write_textures(bus, stack_collapse_layers(bus['lamp_textures'][key])), key)
@@ -732,7 +732,7 @@ def	write_material(bus):
 
 	if not append_unique(bus['cache']['materials'], ma_name):
 		return ma_name
-	
+
 	# Write material BRDF
 	brdf= PLUGINS['BRDF'][VRayMaterial.type].write(bus)
 
@@ -889,7 +889,7 @@ def write_materials(bus):
 					ids_list.append(str(ma_id))
 
 	# No materials assigned - use default material
-	if len(mtls_list) == 0: 
+	if len(mtls_list) == 0:
 		bus['node']['material']= bus['defaults']['material']
 
 	# Only one material - no need for Multi-material
@@ -996,7 +996,7 @@ def write_lamp(bus):
 			ofile.write("\n\tshadowColor_tex= %s;" % textures['shadowColor'])
 		else:
 			ofile.write("\n\tshadow_color_tex= %s;" % textures['shadowColor'])
-		
+
 	if lamp_type == 'SunLight':
 		ofile.write("\n\tsky_model= %i;"%(SKY_MODEL[VRayLamp.sky_model]))
 	else:
@@ -1005,7 +1005,7 @@ def write_lamp(bus):
 		else:
 			color= kelvin_to_rgb(VRayLamp.temperature)
 		ofile.write("\n\tcolor= %s;" % a(scene, "Color(%.6f, %.6f, %.6f)"%(tuple(color))))
-			
+
 		if lamp_type != 'LightIESMax':
 			ofile.write("\n\tunits= %i;"%(UNITS[VRayLamp.units]))
 
@@ -1173,7 +1173,7 @@ def write_object(bus):
 
 	# Displace or Subdivision
 	if ob.vray.GeomStaticSmoothedMesh.use:
-		PLUGINS['GEOMETRY']['GeomStaticSmoothedMesh'].write(bus)	
+		PLUGINS['GEOMETRY']['GeomStaticSmoothedMesh'].write(bus)
 	else:
 		PLUGINS['GEOMETRY']['GeomDisplacedMesh'].write(bus)
 
@@ -1265,7 +1265,7 @@ def _write_object_particles(bus):
 					bus['node']['geometry']= hair_geom_name
 					bus['node']['material']= ps_material
 					bus['node']['hair']=     True
-					
+
 					write_node(bus)
 
 					bus['node']['hair']=     False
@@ -1317,12 +1317,12 @@ def _write_object_particles(bus):
 
 					for p_ob in particle_objects:
 						part_name= clean_string("PA%sPS%sP%s" % (ps.name, ps.settings.name, p))
-						
+
 						if 'particle' in bus['node'] and 'name' in bus['node']['particle']:
 							part_name= "OB%sPS%sP%s" %(bus['node']['particle']['name'],
 													   clean_string(ps.name),
 													   p)
-												 
+
 						if ps.settings.use_whole_group or ps.settings.use_global_dupli:
 							part_transform= part_transform * p_ob.matrix_world
 
@@ -1359,7 +1359,7 @@ def _write_object_dupli(bus):
 
 		for dup_id,dup_ob in enumerate(ob.dupli_list):
 			parent_dupli= ""
-			
+
 			bus['node']['object']= dup_ob.object
 			bus['node']['base']=   ob
 
@@ -1368,7 +1368,7 @@ def _write_object_dupli(bus):
 														  dup_ob.object.name,
 														  dup_id))
 			dup_node_matrix= dup_ob.matrix
-			
+
 			# For case when dupli is inside other dupli
 			if 'dupli' in bus['node'] and 'name' in bus['node']['dupli']:
 				# Store parent dupli name
@@ -1385,7 +1385,7 @@ def _write_object_dupli(bus):
 			bus['node']['base']=   ob
 			bus['node']['dupli']=  {}
 			bus['node']['dupli']['name']=   parent_dupli
-			
+
 		ob.dupli_list_clear()
 
 
@@ -1671,7 +1671,7 @@ def write_scene(bus):
 				return True # Error
 		else:
 			write_frame(bus)
-		
+
 	write_settings(bus)
 
 	debug(scene, "Writing scene... done {0:<64}".format("[%.2f]"%(time.clock() - timer)))
@@ -1703,8 +1703,12 @@ def run(engine, bus):
 		params.append(str(scene.render.threads))
 
 	if bus['preview']:
-		preview_file=     os.path.join(tempfile.gettempdir(), "preview.jpg")
-		preview_loadfile= os.path.join(tempfile.gettempdir(), "preview.0000.jpg")
+		if os.name == 'posix':
+			preview_file=     os.path.join("/dev/shm/vb25-preview-" + getpass.getuser(), "preview.jpg")
+			preview_loadfile= os.path.join("/dev/shm/vb25-preview-" + getpass.getuser(), "preview.0000.jpg")
+		else:
+			preview_file= os.path.join(tempfile.gettempdir(), "vb25-preview-" + getpass.getuser(), "preview.jpg")
+			preview_loadfile= os.path.join(tempfile.gettempdir(), "vb25-preview-" + getpass.getuser(), "preview.0000.jpg")
 
 		params.append('-imgFile=')
 		params.append(preview_file)
@@ -1758,7 +1762,7 @@ def run(engine, bus):
 
 		if VRayExporter.auto_save_render or VRayExporter.image_to_blender:
 			image_file= os.path.join(bus['filenames']['output'], bus['filenames']['output_filename'])
-			
+
 			params.append('-imgFile=')
 			params.append(image_file)
 
@@ -1825,7 +1829,7 @@ def run(engine, bus):
 
 	else:
 		debug(scene, "Enable \"Autorun\" option to start V-Ray automatically after export.")
-	
+
 
 def render(engine, scene, preview= None):
 	VRayScene=    scene.vray
@@ -1842,7 +1846,7 @@ def render(engine, scene, preview= None):
 
 	# Preview
 	bus['preview']= preview
-	
+
 	# V-Ray uses UV indexes, Blender uses UV names
 	# Here we store UV name->index map
 	bus['uvs']= get_uv_layers_map(scene)
